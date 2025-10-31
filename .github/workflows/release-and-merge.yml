@@ -8,6 +8,10 @@ on:
         default: ''
         type: string
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   # JOB 1: Tests y Validación
   test-and-build:
@@ -37,7 +41,7 @@ jobs:
 
       - name: Verificar cobertura mínima
         run: |
-          COVERAGE=$(grep -oP 'Lines\s+:\s+\K[\d.]+' coverage/front/lcov-report/index.html | head -1 || echo "0")
+          COVERAGE=$(grep -oP 'Lines\s+:\s+\K[\d.]+' coverage/parcial-misw4104/index.html | head -1 || echo "0")
           echo "Cobertura actual: $COVERAGE%"
           # Descomentar para forzar cobertura mínima
           # if (( $(echo "$COVERAGE < 80" | bc -l) )); then
@@ -259,5 +263,4 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./dist/front
-          cname:
+          publish_dir: ./dist/parcial-misw4104/browser
