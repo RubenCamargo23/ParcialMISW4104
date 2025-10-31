@@ -26,23 +26,38 @@ jobs:
           node-version: '20'
 
       - name: Instalar dependencias
-        run: cd parcial-misw4104 && npm install
+        shell: bash
+        run: |
+          cd parcial-misw4104
+          pwd
+          ls -la
+          npm install
 
       - name: Ejecutar Lint
-        run: cd parcial-misw4104 && npm run lint --if-present
+        shell: bash
+        run: |
+          cd parcial-misw4104
+          npm run lint --if-present
         continue-on-error: true
 
       - name: Ejecutar tests con Karma/Jasmine
-        run: cd parcial-misw4104 && npm test -- --no-watch --code-coverage --browsers=ChromeHeadlessCI
+        shell: bash
+        run: |
+          cd parcial-misw4104
+          npm test -- --no-watch --code-coverage --browsers=ChromeHeadlessCI
 
       - name: Verificar cobertura mínima
+        shell: bash
         run: |
           cd parcial-misw4104
           COVERAGE=$(grep -oP 'Lines\s+:\s+\K[\d.]+' coverage/front/lcov-report/index.html | head -1 || echo "0")
           echo "Cobertura actual: $COVERAGE%"
 
       - name: Build de producción
-        run: cd parcial-misw4104 && npm run build -- --configuration production
+        shell: bash
+        run: |
+          cd parcial-misw4104
+          npm run build -- --configuration production
 
   # JOB 2: Release y Merge (solo si los tests pasan)
   release-and-merge:
@@ -103,6 +118,7 @@ jobs:
           echo "Versión definida: v$VERSION"
 
       - name: Crear rama Release
+        shell: bash
         run: |
           RELEASE_BRANCH="release_$VERSION"
           echo "RELEASE_BRANCH=$RELEASE_BRANCH" >> $GITHUB_ENV
@@ -115,7 +131,9 @@ jobs:
           git pull origin develop
           git checkout -b "$RELEASE_BRANCH"
           
-          cd parcial-misw4104 && npm version $VERSION --no-git-tag-version && cd ..
+          cd parcial-misw4104
+          npm version $VERSION --no-git-tag-version
+          cd ..
           
           git add parcial-misw4104/package.json
           git add parcial-misw4104/package-lock.json 2>/dev/null || true
@@ -207,9 +225,9 @@ jobs:
         if: always()
         run: |
           if [ "${{ job.status }}" == "success" ]; then
-            echo "✅ Release v$VERSION completado exitosamente"
+            echo "✅ Release v$VERSION completado"
           else
-            echo "❌ Error en el proceso de release"
+            echo "❌ Error en release"
           fi
 
   # JOB 3: Deploy
@@ -231,10 +249,16 @@ jobs:
           node-version: '20'
 
       - name: Instalar dependencias
-        run: cd parcial-misw4104 && npm install
+        shell: bash
+        run: |
+          cd parcial-misw4104
+          npm install
 
       - name: Build para GitHub Pages
-        run: cd parcial-misw4104 && npm run build -- --configuration production --base-href=/ParcialMISW4104/
+        shell: bash
+        run: |
+          cd parcial-misw4104
+          npm run build -- --configuration production --base-href=/ParcialMISW4104/
 
       - name: Deploy a GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
