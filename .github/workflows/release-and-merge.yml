@@ -125,13 +125,17 @@ jobs:
           git checkout -b "$RELEASE_BRANCH"
 
           # Actualizar version en package.json
-          cd parcial-misw4104
-          npm version $VERSION --no-git-tag-version
-          cd ..
-          git add parcial-misw4104/package.json
-          git add parcial-misw4104/package-lock.json 2>/dev/null || echo "No package-lock.json to add"
-          git commit -m "chore: bump version to $VERSION" || echo "No hay cambios en package.json"
-          
+          if [ -d "parcial-misw4104" ]; then
+            cd parcial-misw4104
+            npm version $VERSION --no-git-tag-version
+            cd ..
+            git add parcial-misw4104/package.json
+            git add parcial-misw4104/package-lock.json 2>/dev/null || echo "No package-lock.json to add"
+            git commit -m "chore: bump version to $VERSION" || echo "No hay cambios en package.json"
+          else
+            echo "Warning: parcial-misw4104 directory not found"
+          fi
+
           git push -u origin "$RELEASE_BRANCH"
 
       - name: Mezcla Release -> Main
