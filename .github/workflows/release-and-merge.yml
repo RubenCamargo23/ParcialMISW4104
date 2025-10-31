@@ -37,7 +37,7 @@ jobs:
 
       - name: Verificar cobertura mínima
         run: |
-          COVERAGE=$(grep -oP 'Lines\s+:\s+\K[\d.]+' coverage/parcial-misw4104/lcov-report/index.html | head -1 || echo "0")
+          COVERAGE=$(grep -oP 'Lines\s+:\s+\K[\d.]+' coverage/front/lcov-report/index.html | head -1 || echo "0")
           echo "Cobertura actual: $COVERAGE%"
           # Descomentar para forzar cobertura mínima
           # if (( $(echo "$COVERAGE < 80" | bc -l) )); then
@@ -120,16 +120,10 @@ jobs:
           git checkout -b "$RELEASE_BRANCH"
 
           # Actualizar version en package.json
-          if [ -d "parcial-misw4104" ]; then
-            cd parcial-misw4104
-            npm version $VERSION --no-git-tag-version
-            cd ..
-            git add parcial-misw4104/package.json
-            git add parcial-misw4104/package-lock.json 2>/dev/null || echo "No package-lock.json to add"
-            git commit -m "chore: bump version to $VERSION" || echo "No hay cambios en package.json"
-          else
-            echo "Warning: parcial-misw4104 directory not found"
-          fi
+          npm version $VERSION --no-git-tag-version
+          git add package.json
+          git add package-lock.json 2>/dev/null || echo "No package-lock.json to add"
+          git commit -m "chore: bump version to $VERSION" || echo "No hay cambios en package.json"
 
           git push -u origin "$RELEASE_BRANCH"
 
@@ -259,12 +253,11 @@ jobs:
         run: npm install
 
       - name: Build para GitHub Pages
-        working-directory: ./parcial-misw4104
-        run: npm run build -- --configuration production --base-href=/ParcialMISW4104/
+        run: npm run build -- --configuration production --base-href=/Fork_MISW4104_202515_E09/
 
       - name: Deploy a GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./parcial-misw4104/dist/parcial-misw4104
+          publish_dir: ./dist/front
           cname:
