@@ -26,20 +26,16 @@ jobs:
           node-version: '20'
 
       - name: Instalar dependencias
-        working-directory: ./parcial-misw4104
         run: npm install
 
       - name: Ejecutar Lint
-        working-directory: ./parcial-misw4104
         run: npm run lint --if-present
         continue-on-error: true
 
       - name: Ejecutar tests con Karma/Jasmine
-        working-directory: ./parcial-misw4104
         run: npm test -- --no-watch --code-coverage --browsers=ChromeHeadlessCI
 
       - name: Verificar cobertura mínima
-        working-directory: ./parcial-misw4104
         run: |
           COVERAGE=$(grep -oP 'Lines\s+:\s+\K[\d.]+' coverage/parcial-misw4104/lcov-report/index.html | head -1 || echo "0")
           echo "Cobertura actual: $COVERAGE%"
@@ -50,7 +46,6 @@ jobs:
           # fi
 
       - name: Build de producción
-        working-directory: ./parcial-misw4104
         run: npm run build -- --configuration production
 
   # JOB 2: Release y Merge (solo si los tests pasan)
@@ -79,7 +74,7 @@ jobs:
             # Obtener el último tag y incrementar automáticamente
             git fetch --tags
             LAST_TAG=$(git tag -l "v*" | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n1)
-          
+
             if [ -z "$LAST_TAG" ]; then
               VERSION="1.0.0"
             else
@@ -88,11 +83,11 @@ jobs:
               MAJOR=$(echo $LAST_VERSION | cut -d. -f1)
               MINOR=$(echo $LAST_VERSION | cut -d. -f2)
               PATCH=$(echo $LAST_VERSION | cut -d. -f3)
-          
+
               # Incrementar PATCH por defecto
               # Si el commit message contiene [major] o [minor], incrementar esos
               COMMIT_MSG=$(git log -1 --pretty=%B)
-          
+
               if echo "$COMMIT_MSG" | grep -qi "\[major\]"; then
                 MAJOR=$((MAJOR + 1))
                 MINOR=0
@@ -103,7 +98,7 @@ jobs:
               else
                 PATCH=$((PATCH + 1))
               fi
-          
+
               VERSION="$MAJOR.$MINOR.$PATCH"
             fi
           fi
@@ -115,11 +110,11 @@ jobs:
           RELEASE_BRANCH="release_$VERSION"
           echo "RELEASE_BRANCH=$RELEASE_BRANCH" >> $GITHUB_ENV
           echo "Creando rama: $RELEASE_BRANCH"
-          
+
           # Eliminar rama release si ya existe (de intentos previos)
           git push origin --delete "$RELEASE_BRANCH" 2>/dev/null || echo "Rama release no existía en remoto"
           git branch -D "$RELEASE_BRANCH" 2>/dev/null || echo "Rama release no existía localmente"
-          
+
           git checkout develop
           git pull origin develop
           git checkout -b "$RELEASE_BRANCH"
@@ -143,7 +138,7 @@ jobs:
         run: |
           git checkout main
           git pull origin main
-          
+
           # Merge aceptando siempre la versión de release en caso de conflicto
           git merge "$RELEASE_BRANCH" -X theirs -m "chore: merge release $VERSION to main" || {
             echo "Conflicto detectado, resolviendo automáticamente..."
@@ -151,7 +146,7 @@ jobs:
             git add .
             git commit -m "chore: merge release $VERSION to main (auto-resolved)"
           }
-          
+
           git push origin main
 
       - name: Crear tag de versión
@@ -159,14 +154,14 @@ jobs:
         run: |
           git checkout main
           git pull origin main
-          
+
           # Verificar si el tag ya existe
           if git tag -l "v$VERSION" | grep -q "v$VERSION"; then
             echo "Tag v$VERSION ya existe, eliminando..."
             git tag -d "v$VERSION" || true
             git push origin --delete "v$VERSION" || true
           fi
-          
+
           # Crear nuevo tag
           git tag -a "v$VERSION" -m "Release v$VERSION"
           git push origin "v$VERSION"
@@ -177,29 +172,29 @@ jobs:
         run: |
           # Obtener el tag anterior
           PREV_TAG=$(git tag -l "v*" | grep -E "^v[0-9]+\.[0-9]+\.[0-9]+$" | sort -V | tail -n2 | head -n1)
-          
+
           if [ -z "$PREV_TAG" ]; then
             PREV_TAG=$(git rev-list --max-parents=0 HEAD)
           fi
-          
+
           # Generar changelog
           echo "# Release v$VERSION" > RELEASE_NOTES.md
           echo "" >> RELEASE_NOTES.md
           echo "## Cambios desde $PREV_TAG" >> RELEASE_NOTES.md
           echo "" >> RELEASE_NOTES.md
-          
+
           # Commits agrupados por tipo
           echo "### Features ✨" >> RELEASE_NOTES.md
           git log $PREV_TAG..HEAD --oneline --grep="^feat" >> RELEASE_NOTES.md || echo "- Ninguno" >> RELEASE_NOTES.md
           echo "" >> RELEASE_NOTES.md
-          
+
           echo "### Bug Fixes 🐛" >> RELEASE_NOTES.md
           git log $PREV_TAG..HEAD --oneline --grep="^fix" >> RELEASE_NOTES.md || echo "- Ninguno" >> RELEASE_NOTES.md
           echo "" >> RELEASE_NOTES.md
-          
+
           echo "### Otros cambios 🔧" >> RELEASE_NOTES.md
           git log $PREV_TAG..HEAD --oneline --invert-grep --grep="^feat\|^fix" >> RELEASE_NOTES.md || echo "- Ninguno" >> RELEASE_NOTES.md
-          
+
           cat RELEASE_NOTES.md
 
       - name: Crear GitHub Release
@@ -261,7 +256,6 @@ jobs:
           node-version: '20'
 
       - name: Instalar dependencias
-        working-directory: ./parcial-misw4104
         run: npm install
 
       - name: Build para GitHub Pages
