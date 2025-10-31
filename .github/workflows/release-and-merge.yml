@@ -26,23 +26,22 @@ jobs:
           node-version: '20'
 
       - name: Instalar dependencias
-        run: cd parcial-misw4104 && npm install
+        run: npm install
 
       - name: Ejecutar Lint
-        run: cd parcial-misw4104 && npm run lint --if-present
+        run: npm run lint --if-present
         continue-on-error: true
 
       - name: Ejecutar tests con Karma/Jasmine
-        run: cd parcial-misw4104 && npm test -- --no-watch --code-coverage --browsers=ChromeHeadlessCI
+        run: npm test -- --no-watch --code-coverage --browsers=ChromeHeadlessCI
 
       - name: Verificar cobertura mínima
         run: |
-          cd parcial-misw4104
-          COVERAGE=$(grep -oP 'Lines\s+:\s+\K[\d.]+' coverage/front/lcov-report/index.html | head -1 || echo "0")
+          COVERAGE=$(grep -oP 'Lines\s+:\s+\K[\d.]+' coverage/parcial-misw4104/lcov-report/index.html | head -1 || echo "0")
           echo "Cobertura actual: $COVERAGE%"
 
       - name: Build de producción
-        run: cd parcial-misw4104 && npm run build -- --configuration production
+        run: npm run build -- --configuration production
 
   # JOB 2: Release y Merge (solo si los tests pasan)
   release-and-merge:
@@ -114,13 +113,13 @@ jobs:
           git checkout develop
           git pull origin develop
           git checkout -b "$RELEASE_BRANCH"
-          
-          cd parcial-misw4104 && npm version $VERSION --no-git-tag-version && cd ..
-          
-          git add parcial-misw4104/package.json
-          git add parcial-misw4104/package-lock.json 2>/dev/null || true
+
+          npm version $VERSION --no-git-tag-version
+
+          git add package.json
+          git add package-lock.json 2>/dev/null || true
           git commit -m "chore: bump version to $VERSION" || echo "No hay cambios"
-          
+
           git push -u origin "$RELEASE_BRANCH"
 
       - name: Mezcla Release -> Main
@@ -231,13 +230,13 @@ jobs:
           node-version: '20'
 
       - name: Instalar dependencias
-        run: cd parcial-misw4104 && npm install
+        run: npm install
 
       - name: Build para GitHub Pages
-        run: cd parcial-misw4104 && npm run build -- --configuration production --base-href=/ParcialMISW4104/
+        run: npm run build -- --configuration production --base-href=/ParcialMISW4104/
 
       - name: Deploy a GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./parcial-misw4104/dist/front
+          publish_dir: ./dist/parcial-misw4104
