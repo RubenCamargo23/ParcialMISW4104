@@ -20,37 +20,20 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Verificar estructura del proyecto
-        run: |
-          echo "=== Directorio actual ==="
-          pwd
-          echo "=== Contenido raíz ==="
-          ls -la
-          echo "=== Buscando package.json ==="
-          find . -name "package.json" -type f
-          echo "=== Contenido parcial-misw4104 ==="
-          ls -la parcial-misw4104/ || echo "No existe parcial-misw4104"
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Instalar dependencias
-        run: |
-          cd parcial-misw4104
-          npm install
+        run: cd parcial-misw4104 && npm install
 
       - name: Ejecutar Lint
-        run: |
-          cd parcial-misw4104
-          npm run lint --if-present
+        run: cd parcial-misw4104 && npm run lint --if-present
         continue-on-error: true
 
       - name: Ejecutar tests con Karma/Jasmine
-        run: |
-          cd parcial-misw4104
-          npm test -- --no-watch --code-coverage --browsers=ChromeHeadlessCI
+        run: cd parcial-misw4104 && npm test -- --no-watch --code-coverage --browsers=ChromeHeadlessCI
 
       - name: Verificar cobertura mínima
         run: |
@@ -59,9 +42,7 @@ jobs:
           echo "Cobertura actual: $COVERAGE%"
 
       - name: Build de producción
-        run: |
-          cd parcial-misw4104
-          npm run build -- --configuration production
+        run: cd parcial-misw4104 && npm run build -- --configuration production
 
   # JOB 2: Release y Merge (solo si los tests pasan)
   release-and-merge:
@@ -134,9 +115,7 @@ jobs:
           git pull origin develop
           git checkout -b "$RELEASE_BRANCH"
           
-          cd parcial-misw4104
-          npm version $VERSION --no-git-tag-version
-          cd ..
+          cd parcial-misw4104 && npm version $VERSION --no-git-tag-version && cd ..
           
           git add parcial-misw4104/package.json
           git add parcial-misw4104/package-lock.json 2>/dev/null || true
@@ -222,8 +201,7 @@ jobs:
 
       - name: Limpiar rama de release
         if: success()
-        run: |
-          git push origin --delete "$RELEASE_BRANCH" || echo "Rama ya eliminada"
+        run: git push origin --delete "$RELEASE_BRANCH" || echo "Rama ya eliminada"
 
       - name: Notificar resultado
         if: always()
@@ -252,11 +230,11 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Instalar dependencias y build
-        run: |
-          cd parcial-misw4104
-          npm install
-          npm run build -- --configuration production --base-href=/ParcialMISW4104/
+      - name: Instalar dependencias
+        run: cd parcial-misw4104 && npm install
+
+      - name: Build para GitHub Pages
+        run: cd parcial-misw4104 && npm run build -- --configuration production --base-href=/ParcialMISW4104/
 
       - name: Deploy a GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
