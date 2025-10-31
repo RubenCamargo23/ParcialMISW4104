@@ -1,10 +1,13 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AppComponent } from './app.component';
+import { VehiculoModule } from './vehiculo/vehiculo.module';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppComponent],
+      imports: [HttpClientTestingModule, VehiculoModule],
+      declarations: [AppComponent],
     }).compileComponents();
   });
 
@@ -20,10 +23,10 @@ describe('AppComponent', () => {
     expect(app.title).toEqual('parcial-misw4104');
   });
 
-  it('should render title', () => {
+  it('should render vehiculo-list component', () => {
     const fixture = TestBed.createComponent(AppComponent);
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, parcial-misw4104');
+    expect(compiled.querySelector('app-vehiculo-list')).toBeTruthy();
   });
 });
